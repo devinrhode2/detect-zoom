@@ -154,24 +154,9 @@ var DetectZoom = {
     return {zoom: z, devicePxPerCssPx: z};
   },
   _zoomOpera: function() {
-    // the trick: a div with position:fixed;width:100%'s offsetWidth is the
-    // viewport width in CSS pixels, while window.innerWidth was in system
-    // pixels. Thanks to:
-    // http://virtuelvis.com/2005/05/how-to-detect-zoom-level-in-opera/
-    //
-    // Unfortunately, this failed sometime in 2011; newer Opera always returns 1.
-    // TODO: find a trick for new Opera versions.
-    var fixedDiv = document.createElement('div');
-    fixedDiv.style.position = 'fixed';
-    fixedDiv.style.border = '5px solid blue';
-    fixedDiv.style.width = '100%';
-    fixedDiv.style.height = '100%';
-    fixedDiv.style.top = fixedDiv.style.left = '0';
-    fixedDiv.style.visibility = 'hidden';
-    document.body.appendChild(fixedDiv);
-    var z = window.innerWidth / fixedDiv.offsetWidth;
-    z = Math.round(z * 100) / 100;
-    document.body.removeChild(fixedDiv);
+    // the trick: window.outerWidth is in system pixels and window.innerWidth
+    // is in CSS pixels.
+    var z = window.outerWidth / window.innerWidth;
     return {zoom: z, devicePxPerCssPx: z};
   },
   ratios: function() {
