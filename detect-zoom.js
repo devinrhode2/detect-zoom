@@ -154,8 +154,41 @@ var DetectZoom = {
     return {zoom: z, devicePxPerCssPx: z};
   },
   _zoomOpera: function() {
-    // the trick: window.outerWidth is in system pixels and window.innerWidth
-    // is in CSS pixels.
+    // Observations:
+    // 10.00 to 11.00: outerWidth = innerWidth = browser width in system px including scrollbar and chrome
+    // 11.51-11.64:
+    //   outerWidth = viewport including scrollbars in system px
+    //   innerWidth = viewport including scrollbars in CSS px; 
+    //   fixedDiv.offsetWidth = viewport excluding scrollbars in CSS px
+    
+    // the trick: a div with position:fixed;width:100%'s offsetWidth is the
+    // viewport width in CSS pixels, while window.innerWidth was in system
+    // pixels. Thanks to:
+    // http://virtuelvis.com/2005/05/how-to-detect-zoom-level-in-opera/
+    //
+    // Unfortunately, this failed sometime in 2011; newer Opera always returns 1.
+    // TODO: find a trick for new Opera versions.
+    var fixedDiv = document.createElement('div');
+    fixedDiv.style.position = 'fixed';
+    fixedDiv.style.width = '100%';
+    fixedDiv.style.height = '100%';
+    fixedDiv.style.top = fixedDiv.style.left = '0';
+    fixedDiv.style.visibility = 'hidden';
+    document.body.appendChild(fixedDiv);
+    var z = window.innerWidth / fixedDiv.offsetWidth;
+    if (null != document.getElementById("console"))
+    document.getElementById("console").innerHTML =
+      "fixed width " + fixedDiv.offsetWidth + "<br>" + 
+      "window innerWidth " + window.innerWidth + "<br>"+
+      "window outerWidth " + window.outerWidth;
+    
+    z = Math.round(z * 100) / 100;
+    document.body.removeChild(fixedDiv);
+    return {zoom: z, devicePxPerCssPx: z};
+    // the trick: window.outerWidth is the viewport width in system pixels and
+    // window.innerWidth is in CSS pixels. Note that this measurement includes
+    // scrollbars but does NOT include browser chrome
+    // (unlike outerWidth on Webkit).
     var z = window.outerWidth / window.innerWidth;
     return {zoom: z, devicePxPerCssPx: z};
   },
